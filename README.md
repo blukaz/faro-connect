@@ -6,7 +6,7 @@ This project is part of a master study seminar. The goal of this project is to c
 
 1.) cd ~/catkin_workspace/src
 
-2.) git clone https://github.com/blukaz/faro-connect
+2.) git clone https://github.com/blukaz/server_client
 
 3.) cd ~/catkin_workspace/
 

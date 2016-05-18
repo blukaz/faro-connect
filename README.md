@@ -1,3 +1,5 @@
+# Faro 3D LS - remote control and data retrieve
+
 This project is part of a master study seminar. The goal of this project is to control a Faro 3D Laser Scanner remotely and than retrieve its scan data. The goal of this project is to control a Faro 3D Laser Scanner remotely and than retrieve its scan data.
 
 # Instructions

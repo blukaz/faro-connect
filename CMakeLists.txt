@@ -3,6 +3,7 @@ project(server_client)
 
 find_package(catkin REQUIRED COMPONENTS
 	roscpp
+	sensor_msgs
 	#actionlib
 )
 
@@ -21,7 +22,6 @@ if(Boost_FOUND)
 endif()
 
 catkin_package(
-	#INCLUDE_DIRS include
 	LIBRARIES ${server_client}
 	CATKIN_DEPENDS
 )

@@ -4,6 +4,11 @@
 #include <string>
 #include <iostream>
 #include <fstream>
+#include <sensor_msgs/Joy.h>
+
+bool start = false;
+
+int i = 0;
 
 struct Client
 {
@@ -33,7 +38,6 @@ void client_thread() {
     client.send(parametri);
     //usleep(20000);
     //}
-
 }
 
 void server_thread() {
@@ -47,12 +51,11 @@ void server_thread() {
             acceptor.accept(socket);
 
             std::ofstream myfile;
-            myfile.open ("/home/luka/SCANS/scan.xyz");
+            myfile.open ("/home/bare/SCANS/scan.xyz");
 
             boost::asio::streambuf sb;
             boost::system::error_code ec;
             while (boost::asio::read(socket, sb, ec)) {
-                std::cout << "receiving... " << "\n";
 
                 myfile << &sb;
 
@@ -72,25 +75,58 @@ void server_thread() {
     }
 }
 
+void joyCallback(const sensor_msgs::Joy::ConstPtr& joy){
+	ROS_INFO("I heard: [%d]", joy->buttons[1]);	
+	if ( joy->buttons[1] == 1 )
+		start = true;
+}
+
+/*
 void spinThread()
 {
   ros::spin();
 }
+*/
 
-int main(int argc, char **argv) {
+int main(int argc, char **argv) {	
 
-	std::cout << "Unesi parametre scan-a (<start> : pokretanje) :" << std::endl;
-	std::cin >> parametri;
-	std::cout << "Unesi IP adresu: " << std::endl;
-	std::cin >> ip_adresa;
-	std::cout << "Unesi port <15000:40000>: " << std::endl;
-	std::cin >> port;
+	ros::init(argc, argv, "faro_server");
 
-    boost::thread_group tg;
-    tg.create_thread(client_thread);
+	ros::NodeHandle n;
 
-    boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
-    tg.create_thread(server_thread);
+	ros::Subscriber sub = n.subscribe("joy", 1, joyCallback);	
 
-    tg.join_all();
+	while(ros::ok()){
+		if ( start ){
+			std::cout << "Sending request for scan..." << std::endl;
+			ip_adresa = "192.168.111.7";
+			port = "25000";
+			parametri = "start";
+	
+			boost::thread_group tg;
+			tg.create_thread(client_thread);
+			std::cout << "receiving... " << "\n";
+			boost::this_thread::sleep_for(boost::chrono::milliseconds(100));
+			tg.create_thread(server_thread);
+			tg.join_all();
+			start = false;
+			std::ostringstream os;
+			if ( i < 10 )
+				os << "/home/bare/SCANS/scan00" << i << ".3d";
+			else
+				os << "/home/bare/SCANS/scan0" << i << ".3d";
+			std::string s = os.str();
+			char path[28];
+			strcpy(path, s.c_str());
+			std::cout << path << std::endl;
+			rename("/home/bare/SCANS/scan.xyz", path);
+			i++;
+		}
+		ros::spinOnce();
+
+	}
+	
+	//ros::spin();    	
+
+	return 0;
 }
